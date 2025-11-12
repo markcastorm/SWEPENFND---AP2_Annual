@@ -1,0 +1,12 @@
+# requirements.txt for AP2 Annual Scraper
+# Based on the dependencies observed in the half-year report project and new additions
+
+pandas
+PyMuPDF # for fitz
+camelot-py[cv] # for camelot, includes opencv-python
+openpyxl # for Excel output
+selenium
+undetected-chromedriver
+beautifulsoup4
+requests
+python-dotenv

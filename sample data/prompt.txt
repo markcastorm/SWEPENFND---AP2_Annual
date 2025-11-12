@@ -1,0 +1,7 @@
+this is the prompt i used to generate my code with for annual(my code works well (C:\Users\casto\Documents\Sweden\SWEPENFND---AP2\logs\orchestrator_20251110_203446.log) i loveit thanks with
+  llm falll back i can archive 100% accearace even on a new pdf structures ananalyze my code files 
+we ar proceeding to the new directory (C:\Users\casto\Documents\Sweden\SWEPENFND---AP2 Annual) for the anual script now this script will be downloading the annual report not half year we will have the new config.py app_downloader.py similar
+  folderstructure to the first scripts but for the annual our finall data will be different C:\Users\casto\Documents\Sweden\SWEPENFND---AP2\project information\AP2_SWEPENFND_Runbook.docx here is a sample data of 2024 data where wewill be
+  extracting 2024 data and some 2023 data based on the runbook analyze it first lets start with the downloader config.py with the right column headers as the sample data and in the righ order they are in the sample data first
+added a pdf version of the run book(C:\Users\casto\Documents\Sweden\SWEPENFND---AP2 Annual\sample data\AP2_SWEPENFND_Runbook.pdf)and a csv of sample data (C:\Users\casto\Documents\Sweden\SWEPENFND---AP2 Annual\sample data\Copy of
+  AP2_SA_SWEPENFND_DATA_20250304.xlsx - Sheet3.csv))
