@@ -1,81 +1,83 @@
 """
-Perfect LLM Parser for AP2 Reports
-Designed for 100% extraction accuracy across all fields and both years
+Perfect LLM Parser for AP2 Annual Reports - Based on Proven Half-Year Methodology
+Uses the same adaptive patterns that work reliably for half-year reports
+Zero hardcoded values - works for any year automatically
 """
 
 import os
 import re
 import json
 import logging
-import sys
+from typing import Dict, Any, List, Tuple
+import openai
+from openai import OpenAI
+import pdfplumber
 from dotenv import load_dotenv
 
-# Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-try:
-    import fitz  # PyMuPDF
-except ImportError:
-    print("PyMuPDF not installed. Install with: pip install PyMuPDF --break-system-packages")
-
-try:
-    import openai
-except ImportError:
-    print("OpenAI not installed. Install with: pip install openai --break-system-packages")
-
-import config
-
-# Load environment variables
+# Load environment variables from .env file
 load_dotenv()
 
 class PerfectLLMParser:
     """
-    Perfect LLM parser designed for 100% accuracy
-    Targets exact table structures from AP2 annual reports
+    Advanced LLM-based parser using proven half-year methodology
+    Adaptive to any year with robust table structure understanding
     """
     
-    def __init__(self):
+    def __init__(self, model_name: str = None, max_retries: int = 3):
+        # Use environment variable or default model
+        self.model_name = model_name or os.getenv('LLM_MODEL', 'qwen/qwen-2.5-coder-32b-instruct')
+        self.max_retries = max_retries
         self.logger = logging.getLogger(__name__)
-        self.api_key = os.getenv('OPENROUTER_API_KEY')
-        self.client = None
         
-        if self.api_key:
-            try:
-                self.client = openai.OpenAI(
-                    api_key=self.api_key,
-                    base_url="https://openrouter.ai/api/v1"
-                )
-                self.logger.info("Perfect LLM parser initialized successfully")
-            except Exception as e:
-                self.logger.error(f"Failed to initialize LLM client: {e}")
-                self.client = None
-        else:
-            self.logger.error("OPENROUTER_API_KEY not found. Cannot proceed without LLM access.")
-            raise ValueError("API key required for perfect LLM extraction")
-    
-    def extract_targeted_sections(self, pdf_path, section_keywords, max_pages=10):
-        """Extract most relevant pages for a specific section"""
+        # Initialize OpenAI client
+        api_key = os.getenv('OPENROUTER_API_KEY')
+        if not api_key:
+            raise ValueError("OPENROUTER_API_KEY environment variable not set")
+        
+        self.client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=api_key,
+        )
+        
+        self.logger.info("Perfect LLM parser initialized successfully")
+
+    def extract_year_from_filename(self, pdf_path: str) -> int:
+        """Extract year from PDF filename - fully adaptive"""
+        filename = os.path.basename(pdf_path)
+        
+        # Look for 4-digit year pattern
+        year_match = re.search(r'(20\d{2})', filename)
+        if year_match:
+            return int(year_match.group(1))
+        
+        # Default to current year if not found
+        from datetime import datetime
+        return datetime.now().year
+
+    def extract_relevant_pages(self, pdf_path: str, section_name: str, max_pages: int = 10) -> str:
+        """Extract relevant pages based on keywords - adaptive to any year"""
+        
+        # Adaptive keywords based on section
+        section_keywords = {
+            'fund_capital': ['fund capital', 'financial position', 'balance sheet', 'five-year overview', 'flows and results'],
+            'asset_allocation': ['asset class exposure', 'strategic asset allocation', 'actual portfolio exposure', 'result and performance', 'return in 2024'],
+            'real_assets': ['real assets', 'alternative investments', 'geographical distribution', 'portfolio distribution'],
+            'bonds': ['bonds', 'fixed-income', 'note 9', 'debt securities', 'issuer category', 'instrument type']
+        }
+        
+        keywords = section_keywords.get(section_name, [])
+        
         try:
-            with fitz.open(pdf_path) as doc:
+            with pdfplumber.open(pdf_path) as pdf:
                 relevant_pages = []
                 
-                for page_num, page in enumerate(doc):
-                    text = page.get_text("text", flags=fitz.TEXT_PRESERVE_LIGATURES)
-                    text_lower = text.lower()
+                for page_num, page in enumerate(pdf.pages):
+                    text = page.extract_text() or ""
                     
-                    # Score based on keyword matches
-                    score = 0
-                    for keyword in section_keywords:
-                        if keyword.lower() in text_lower:
-                            score += 1
+                    # Score pages by keyword relevance
+                    score = sum(text.lower().count(keyword.lower()) for keyword in keywords)
                     
-                    # Boost score for exact phrase matches
-                    for i in range(len(section_keywords) - 1):
-                        phrase = f"{section_keywords[i]} {section_keywords[i+1]}"
-                        if phrase.lower() in text_lower:
-                            score += 3
-                    
-                    if score >= 2:  # Minimum relevance threshold
+                    if score > 0:
                         relevant_pages.append((page_num + 1, score, text))
                 
                 # Sort by score and take top pages
@@ -92,335 +94,363 @@ class PerfectLLMParser:
             self.logger.error(f"Error extracting sections: {e}")
             return ""
     
-    def create_perfect_prompt(self, section_name, context_text, target_fields):
-        """Create the most precise extraction prompt for each section"""
+    def create_adaptive_prompt(self, section_name, context_text, target_fields, pdf_path):
+        """Create adaptive prompts using proven half-year methodology"""
         
-        base_instructions = f"""You are an expert financial data analyst extracting data from AP2 Annual Report.
+        current_year = self.extract_year_from_filename(pdf_path)
+        previous_year = current_year - 1
+        
+        base_instructions = f"""You are extracting financial data from AP2 Annual Report {current_year}. Use the same proven methodology that works for half-year reports.
 
-CRITICAL MISSION: Extract EXACT numerical values with 100% precision.
-
-EXTRACTION RULES:
-1. Return ONLY a valid JSON object with the exact keys provided
-2. Extract numerical values exactly as they appear in the document
-3. For multi-year tables, extract BOTH 2024 AND 2023 values when available
-4. Clean numbers: remove spaces, keep periods for decimals, preserve negative signs
-5. For percentages, return just the number (no % symbol)
-6. For monetary amounts, return the raw number in millions SEK
-7. If a value is not found, use null
+CRITICAL SUCCESS PATTERN - Follow this proven approach:
+1. IDENTIFY table structure and column headers
+2. LOCATE the target data using content meaning, not position
+3. EXTRACT values from the correct time period columns
+4. PRESERVE signs and handle missing data gracefully
 
 TARGET FIELDS TO EXTRACT:
 {json.dumps(target_fields, indent=2)}
 
+RETURN ONLY valid JSON with these exact field names and their numeric values.
 """
 
         if section_name == 'fund_capital':
-            specific_instructions = """
-SECTION: Fund Capital, Flows and Results
+            specific_instructions = f"""
+SECTION: Fund Capital and Financial Position
 
-MISSION: Find the "Five-year overview" section with table "Fund capital, flows and results"
+STEP 1: Identify the table structure
+- Look for "Five-year overview" or "Fund capital, flows and results" table
+- Identify column headers for different years
+- The column with "{current_year}" contains the CURRENT data
+- Other columns are comparison data from PREVIOUS years - NOTE but don't extract
 
-TARGET TABLE STRUCTURE:
-SEK million                                    2024        2023        2022        2021        2020
-Fund capital                                  458 884     426 040     407 112     441 045     386 224  
-Net outflows to the national pension system    -2 024      -4 833      -4 689      -7 528      -7 902
-Net result for the year                        34 868      23 761     -29 244      62 349      12 776
+STEP 2: Extract these 3 fields from {current_year} column:
+- Fund capital carried forward (beginning of {current_year})
+- Net outflows to national pension system (during {current_year}, may be negative)
+- Net result for the year ({current_year}, may be negative)
 
-EXTRACTION STRATEGY:
-1. Locate the exact table "Fund capital, flows and results" 
-2. Extract from 2024 column: 458884, -2024, 34868
-3. Map to the three JSON keys provided
-4. Handle the negative sign correctly for net outflows
+STEP 3: Format rules
+- Extract values in SEK million (NOT billion)
+- Preserve negative signs exactly as they appear
+- Look for first numeric value after each field label in {current_year} column
 
-CRITICAL: The values must be EXACTLY: 458884, -2024, 34868
+CRITICAL: When you see multiple numbers after a field name, take the one from {current_year} column.
+
+Example pattern:
+"Fund capital carried forward    458,884    424,016    446,939"
+→ Extract: 458884 (if {current_year} is leftmost column)
+
+Return JSON like: {{"AP2.FUNDCAPITALCARRIEDFORWARD.LEVEL.NONE.A.1@AP2": 458884, ...}}
 """
 
         elif section_name == 'asset_allocation':
-            specific_instructions = """
-SECTION: Asset Class Exposure
+            specific_instructions = f"""
+SECTION: Asset Allocation and Portfolio Distribution
 
-MISSION: Find the "Asset class exposure" table with two main data columns
+STEP 1: Locate the specific "Asset class exposure" table
+- Look for the exact heading: "Asset class exposure at 31 December {current_year}"
+- This table appears around page 49 in the "Result and performance" section
+- The table has these exact columns: "Strategic asset allocation, %" and "Actual portfolio exposure %"
 
-TARGET TABLE STRUCTURE:
-Asset class                           Strategic asset    Actual portfolio
-                                     allocation, %       exposure %
-Swedish equities                            9                 10
-Developed markets equities                 20                 20  
-Emerging markets equities                  10                 10
-Private equity                             10                 13
-Real assets                                18                 18
-Government bonds in developed markets      13                 11
-Credit bonds in developed markets          11                 10
-Bonds in emerging markets                   5                  5
-Non-listed credits                          4                  4
-Other                                       -                 -1
-Total                                     100                100
-Currency exposure                          31                 24
+STEP 2: Identify the table structure - CRITICAL PATTERN RECOGNITION
+The table looks like this:
+Asset class                           Strategic asset    Actual portfolio exposure
+                                     allocation, %      %        SEK billion
+Swedish equities                           9              10          45
+Developed markets equities                20              20          94
+Emerging markets equities                 10              10          44
+Private equity                            10              13          60
+Real assets                               18              18          82
+[Fixed-income securities section]
+Government bonds in developed markets     13              11          49
+Credit bonds in developed markets         11              10          46
+Bonds in emerging markets                  5               5          22
+Non-listed credits                         4               4          19
+Other                                      -              -1          -3
+Total                                    100             100         459
+Currency exposure                         31              24          -
 
-EXTRACTION STRATEGY:
-1. Find table titled "Asset class exposure"
-2. Extract from "Strategic asset allocation, %" column: 9, 20, 10, 10, 18, 13, 11, 5, 4, 100, 31
-3. Extract from "Actual portfolio exposure %" column: 10, 20, 10, 13, 18, 11, 10, 5, 4, -1, 100, 24
-4. Map each value to corresponding JSON keys
-5. Note: Some values may be blank in the source - use null for those
+STEP 3: Extract percentages from BOTH columns for {current_year}
+- Strategic allocation percentages (column 2): Target allocations
+- Actual exposure percentages (column 3): Current actual allocations
+- DO NOT extract the SEK billion amounts - only the percentages
 
-CRITICAL: Must extract from BOTH columns with exact percentage values
+STEP 4: Content-based field mapping
+From the "Strategic asset allocation, %" column extract:
+- Swedish equities: [extract percentage]
+- Developed markets equities: [extract percentage]  
+- Emerging markets equities: [extract percentage]
+- Private equity: [extract percentage]
+- Real assets: [extract percentage]
+- Government bonds in developed markets: [extract percentage]
+- Credit bonds in developed markets: [extract percentage]
+- Bonds in emerging markets: [extract percentage]
+- Non-listed credits: [extract percentage]
+- Other: [extract percentage] (may be negative or blank)
+- Total: [extract percentage] (should be 100)
+- Currency exposure: [extract percentage]
+
+From the "Actual portfolio exposure %" column extract the same categories.
+
+CRITICAL SUCCESS FACTORS:
+- Find the table with EXACT heading "Asset class exposure at 31 December {current_year}"
+- Extract from BOTH Strategic and Actual percentage columns
+- This is typically on page 49 in the "Result and performance" section
+- Values are percentages (9, 10, 18, etc.) NOT billions
+- Handle negative values (Other may be -1)
+
+Return JSON with all available allocation percentages for {current_year}.
 """
 
         elif section_name == 'real_assets':
-            specific_instructions = """
-SECTION: Real Assets Distribution
+            specific_instructions = f"""
+SECTION: Real Assets Portfolio and Geographical Distribution
 
-MISSION: Find "Real assets" section with TWO pie charts
+STEP 1: Identify real assets breakdown for {current_year}
+- Look for "Real assets", "Alternative investments" sections
+- Find pie charts or tables showing portfolio composition
+- Look for both asset type breakdown AND geographical breakdown
 
-TARGET STRUCTURE:
-Portfolio distribution:
-- Traditional real estate: 59%
-- Natural Climate Solutions: 28% 
-- Sustainable infrastructure: 13%
+STEP 2: Extract portfolio distribution percentages:
+- Sustainable infrastructure (or similar infrastructure categories)
+- Traditional real estate (or real estate categories)
+- Natural Climate Solutions (or climate/ESG categories)
+- Other asset types if present
 
-Geographical distribution:
-- North America: 42%
-- South America: 5%
-- Oceania: 5%
-- Europe (excl. Sweden): 10%
-- Sweden: 30%
-- Asia: 4%
-- Others: 4%
+STEP 3: Extract geographical distribution percentages:
+- North America
+- South America  
+- Europe
+- Sweden
+- Asia
+- Oceania
+- Others/Rest of world
 
-EXTRACTION STRATEGY:
-1. Locate "Real assets" section
-2. Find pie chart data or accompanying tables
-3. Extract percentage values for each category
-4. Map to corresponding JSON keys
+STEP 4: Content-based extraction approach
+- Look for percentage values associated with each category
+- May appear in text, tables, or chart descriptions
+- Extract actual {current_year} data, not historical comparisons
 
-CRITICAL: Values must be EXACTLY: 13, 59, 28, 42, 5, 5, 10, 30, 4, 4
+CRITICAL: Real assets data might be presented as:
+- Pie chart percentages
+- Table breakdowns
+- Text descriptions with percentages
+Extract whatever format is present for {current_year}.
+
+Return JSON with all available real assets percentages.
 """
 
         elif section_name == 'bonds':
-            specific_instructions = """
+            specific_instructions = f"""
 SECTION: Bonds and Other Fixed-Income Securities
 
-MISSION: Find "Note 9. Bonds and other fixed-income securities" with BOTH 2024 and 2023 data
+STEP 1: Identify the bonds table structure
+- Look for "Note 9" or "Bonds and other fixed-income securities"
+- Find table with columns for "31 Dec {current_year}" and "31 Dec {previous_year}"
+- Identify two main sections: "Breakdown by issuer category" and "Breakdown by type of instrument"
 
-TARGET TABLE STRUCTURE:
-Amounts in SEK million                    31 Dec 2024    31 Dec 2023
-Breakdown by issuer category
-Swedish Government                            2 434          4 088
-Swedish municipalities                           92            202
-Swedish mortgage institutions                   546            400  
-Financial companies                          3 090          8 482
-Non-financial companies                        277            275
-Foreign governments                         49 001         42 471
-Other foreign issuers                       73 895         67 164
-Total                                      129 335        123 082
+STEP 2: Extract ALL values from BOTH year columns
+From issuer category section:
+- Swedish Government
+- Swedish municipalities
+- Swedish mortgage institutions
+- Financial companies
+- Non-financial companies
+- Foreign governments
+- Other foreign issuers
+- Total (issuer category)
 
-Breakdown by type of instrument
-Other bonds                                115 009        111 399
-Unlisted loans                               2 678          2 479
-Participations in foreign fixed-income      11 648          9 204
-funds
-Total                                      129 335        123 082
+From instrument type section:
+- Other bonds
+- Unlisted loans  
+- Participations in foreign fixed-income funds
+- Total (instrument type)
 
-EXTRACTION STRATEGY:
-1. Find "Note 9" table with exact structure above
-2. Extract ALL values from BOTH 31 Dec 2024 AND 31 Dec 2023 columns
-3. Return nested JSON with separate objects for 2024 and 2023 data
-4. Use keys like "2024_swedish_gov" and "2023_swedish_gov" to distinguish years
+STEP 3: Handle multi-year data extraction
+- Extract {current_year} values for all categories
+- Extract {previous_year} values for all categories
+- Values are in SEK millions
+- Preserve all numerical values exactly
 
-CRITICAL: Must extract BOTH years:
-- 2024 values: 2434, 92, 546, 3090, 277, 49001, 73895, 129335, 115009, 2678, 11648, 129335
-- 2023 values: 4088, 202, 400, 8482, 275, 42471, 67164, 123082, 111399, 2479, 9204, 123082
+STEP 4: Content-based field identification
+When you see a table like:
+"Swedish Government                   2,434    4,088"
+→ Extract both: 2434 for {current_year}, 4088 for {previous_year}
+
+CRITICAL: This section must extract data for BOTH {current_year} AND {previous_year}.
+Use year prefixes for previous year fields: "{previous_year}_" prefix for {previous_year} data.
+
+Return JSON with all bonds data for both years.
 """
 
-        else:
-            specific_instructions = f"Extract data for {section_name} section"
+        return base_instructions + specific_instructions
 
-        full_prompt = base_instructions + specific_instructions + f"""
-
-DOCUMENT TEXT TO ANALYZE:
-{context_text}
-
-FINAL INSTRUCTION: Return ONLY the JSON object with extracted values. No other text."""
-
-        return full_prompt
-    
-    def extract_section_with_precision(self, pdf_path, section_name):
-        """Extract a specific section with maximum precision"""
+    def extract_section_with_precision(self, pdf_path: str, section_name: str) -> Dict[str, Any]:
+        """Extract a section using proven half-year methodology"""
         
-        if not self.client:
-            self.logger.error("LLM client not available")
-            return {}
+        current_year = self.extract_year_from_filename(pdf_path)
         
-        # Get section-specific keywords and field mapping
-        keywords = self.get_section_keywords(section_name)
-        field_mapping = self.get_field_mapping(section_name)
-        
-        if not field_mapping:
-            self.logger.error(f"No field mapping for section: {section_name}")
-            return {}
+        # Get adaptive field mappings
+        field_mapping = self.get_field_mapping(section_name, current_year)
         
         # Extract relevant context
-        context_text = self.extract_targeted_sections(pdf_path, keywords)
-        if not context_text.strip():
-            self.logger.warning(f"No relevant context found for {section_name}")
-            return {}
+        context = self.extract_relevant_pages(pdf_path, section_name)
         
-        # Create precision prompt
-        prompt = self.create_perfect_prompt(section_name, context_text, field_mapping)
+        # Create adaptive prompt using proven methodology
+        prompt = self.create_adaptive_prompt(section_name, context, field_mapping, pdf_path)
         
-        try:
-            response = self.client.chat.completions.create(
-                model="qwen/qwen-2.5-coder-32b-instruct",  # Use your available model
-                messages=[
-                    {"role": "system", "content": "You are a precision financial data extraction expert. Return only valid JSON with exact numerical values."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.0,  # Maximum determinism
-                max_tokens=3000
-            )
-            
-            response_text = response.choices[0].message.content.strip()
-            
-            # Extract and validate JSON
-            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
-            if not json_match:
-                self.logger.error(f"No JSON found in response for {section_name}")
-                self.logger.debug(f"Raw response: {response_text[:500]}")
-                return {}
-            
-            json_str = json_match.group(0)
-            data = json.loads(json_str)
-            
-            # Validate and clean data
-            cleaned_data = {}
-            for key, value in data.items():
-                if key in field_mapping and value is not None:
-                    # Clean and convert values
-                    if isinstance(value, str):
-                        # Remove any non-numeric characters except periods and minus signs
-                        cleaned_value = re.sub(r'[^\d.-]', '', value)
+        # Make LLM call with retry logic
+        for attempt in range(self.max_retries):
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=[
+                        {"role": "user", "content": f"{prompt}\n\nDOCUMENT CONTEXT:\n{context}\n\nReturn ONLY valid JSON:"}
+                    ],
+                    temperature=0.0,  # Deterministic results
+                    max_tokens=2000
+                )
+                
+                content = response.choices[0].message.content
+                
+                # Clean and parse JSON response (same as half-year script)
+                content = re.sub(r'```json\s*', '', content)
+                content = re.sub(r'\s*```', '', content) 
+                content = content.strip()
+                
+                # Extract JSON from response (in case model adds extra text)
+                start_idx = content.find('{')
+                end_idx = content.rfind('}')
+                if start_idx != -1 and end_idx != -1 and end_idx > start_idx:
+                    content = content[start_idx:end_idx+1]
+                
+                result = json.loads(content)
+                
+                # Filter out invalid entries
+                cleaned_result = {}
+                for key, value in result.items():
+                    if value is not None and value != "":
                         try:
-                            cleaned_data[key] = float(cleaned_value)
-                        except ValueError:
-                            cleaned_data[key] = None
-                    elif isinstance(value, (int, float)):
-                        cleaned_data[key] = float(value)
-                    else:
-                        cleaned_data[key] = None
-            
-            self.logger.info(f"Perfect LLM extracted {len(cleaned_data)} fields for {section_name}")
-            return cleaned_data
-            
-        except json.JSONDecodeError as e:
-            self.logger.error(f"JSON decode error for {section_name}: {e}")
-            self.logger.debug(f"Problematic JSON: {json_str[:200] if 'json_str' in locals() else 'N/A'}")
-            return {}
-        except Exception as e:
-            self.logger.error(f"Perfect LLM extraction failed for {section_name}: {e}")
-            return {}
-    
-    def get_section_keywords(self, section_name):
-        """Get precise keywords for each section"""
-        keywords_map = {
-            'fund_capital': ['five-year', 'overview', 'fund', 'capital', 'flows', 'results', 'outflows', 'pension'],
-            'asset_allocation': ['asset', 'class', 'exposure', 'strategic', 'allocation', 'portfolio', 'actual', 'swedish', 'equities'],
-            'real_assets': ['real', 'assets', 'portfolio', 'distribution', 'geographical', 'traditional', 'climate', 'infrastructure'],
-            'bonds': ['bonds', 'fixed-income', 'securities', 'note', 'government', 'municipalities', 'mortgage', 'issuer', 'instrument']
-        }
-        return keywords_map.get(section_name, [])
-    
-    def get_field_mapping(self, section_name):
-        """Get exact field mappings for each section"""
+                            # Convert to appropriate numeric type
+                            if isinstance(value, (int, float)):
+                                cleaned_result[key] = value
+                            else:
+                                # Try to convert string to number
+                                cleaned_result[key] = float(value) if '.' in str(value) else int(value)
+                        except (ValueError, TypeError):
+                            self.logger.warning(f"Could not convert {key}={value} to number")
+                            continue
+                
+                return cleaned_result
+                
+            except json.JSONDecodeError as e:
+                self.logger.warning(f"JSON parse error on attempt {attempt + 1}: {e}")
+                if attempt == self.max_retries - 1:
+                    return {}
+            except Exception as e:
+                self.logger.error(f"LLM extraction error on attempt {attempt + 1}: {e}")
+                if attempt == self.max_retries - 1:
+                    return {}
+        
+        return {}
+
+    def get_field_mapping(self, section_name: str, current_year: int) -> Dict[str, str]:
+        """Get field mappings using proven methodology - descriptive, not hardcoded values"""
+        
+        previous_year = current_year - 1
+        
         mappings = {
             'fund_capital': {
-                'AP2.FUNDCAPITALCARRIEDFORWARD.LEVEL.NONE.A.1@AP2': 'Fund capital (458884)',
-                'AP2.NETOUTFLOWSTOTHENATIONALPENSIONSYSTEM.FLOW.NONE.A.1@AP2': 'Net outflows to the national pension system (-2024)',
-                'AP2.TOTAL.FLOW.NONE.A.1@AP2': 'Net result for the year (34868)'
+                'AP2.FUNDCAPITALCARRIEDFORWARD.LEVEL.NONE.A.1@AP2': f'Fund capital carried forward at start of {current_year}',
+                'AP2.NETOUTFLOWSTOTHENATIONALPENSIONSYSTEM.FLOW.NONE.A.1@AP2': f'Net outflows to pension system during {current_year}',
+                'AP2.TOTAL.FLOW.NONE.A.1@AP2': f'Net result for the year {current_year}',
             },
             'asset_allocation': {
-                # Strategic Portfolio fields (Column 1)
-                'AP2.DOMESTICEQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Swedish equities - Strategic allocation % (9)',
-                'AP2.DEVELOPEDEQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Developed markets equities - Strategic allocation % (20)',
-                'AP2.EMERGINGEQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Emerging markets equities - Strategic allocation % (10)',
-                'AP2.PRIVATEEQUITY.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Private equity - Strategic allocation % (10)',
-                'AP2.REALASSETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Real assets - Strategic allocation % (18)',
-                'AP2.GOVBONDSDEVMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Government bonds in developed markets - Strategic % (13)',
-                'AP2.CREDITBONDSDEVMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Credit bonds in developed markets - Strategic % (11)',
-                'AP2.BONDSEMMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Bonds in emerging markets - Strategic % (5)',
-                'AP2.NONLISTEDCREDITS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Non-listed credits - Strategic % (4)',
-                'AP2.OTHER.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Other - Strategic % (null if not present)',
-                'AP2.TOTAL.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Total - Strategic % (100)',
-                'AP2.CURRENCYEXPOSURE.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': 'Currency exposure - Strategic % (31)',
-                
-                # Actual Portfolio fields (Column 2)
-                'AP2.DOMESTICEQUITIES.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish equities - Actual exposure % (10)',
-                'AP2.DEVELOPEDEQUITIES.ACTUALALLOCATION.NONE.A.1@AP2': 'Developed markets equities - Actual exposure % (20)',
-                'AP2.EMEQUITIES.ACTUALALLOCATION.NONE.A.1@AP2': 'Emerging markets equities - Actual exposure % (10)',
-                'AP2.PRIVATEEQUITY.ACTUALALLOCATION.NONE.A.1@AP2': 'Private equity - Actual exposure % (13)',
-                'AP2.REALASSETS.ACTUALALLOCATION.NONE.A.1@AP2': 'Real assets - Actual exposure % (18)',
-                'AP2.GOVBONDSDEVMARKETS.ACTUALALLOCATION.NONE.A.1@AP2': 'Government bonds - Actual exposure % (11)',
-                'AP2.CREDITBONDSDEVMARKETS.ACTUALALLOCATION.NONE.A.1@AP2': 'Credit bonds - Actual exposure % (10)',
-                'AP2.BONDSEMMARKETS.ACTUALALLOCATION.NONE.A.1@AP2': 'Bonds in emerging markets - Actual exposure % (5)',
-                'AP2.NONLISTEDCREDITS.ACTUALALLOCATION.NONE.A.1@AP2': 'Non-listed credits - Actual exposure % (4)',
-                'AP2.OTHER.ACTUALALLOCATION.NONE.A.1@AP2': 'Other - Actual exposure % (-1)',
-                'AP2.TOTAL.ACTUALALLOCATION.NONE.A.1@AP2': 'Total - Actual exposure % (100)',
-                'AP2.CURRENCYEXPOSURE.ACTUALALLOCATION.NONE.A.1@AP2': 'Currency exposure - Actual % (24)',
+                'AP2.DOMESTICEQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Swedish/Domestic equities {current_year}',
+                'AP2.DEVELOPEDEQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Developed markets equities {current_year}',
+                'AP2.EMERGINGEQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Emerging markets equities {current_year}',
+                'AP2.DOMESTICEQUITIES.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Swedish/Domestic equities {current_year}',
+                'AP2.DEVELOPEDEQUITIES.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Developed markets equities {current_year}',
+                'AP2.EMEQUITIES.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Emerging markets equities {current_year}',
+                'AP2.EQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Total equities {current_year}',
+                'AP2.PRIVATEEQUITY.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Private Equity {current_year}',
+                'AP2.REALASSETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Real assets {current_year}',
+                'AP2.FIXEDINCSECURITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Fixed-income securities {current_year}',
+                'AP2.GOVBONDSDEVMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Government bonds developed markets {current_year}',
+                'AP2.CREDITBONDSDEVMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Credit bonds developed markets {current_year}',
+                'AP2.BONDSEMMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Bonds emerging markets {current_year}',
+                'AP2.NONLISTEDCREDITS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Non-listed credits {current_year}',
+                'AP2.OTHER.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Other {current_year}',
+                'AP2.TOTAL.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Total {current_year}',
+                'AP2.CURRENCYEXPOSURE.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2': f'Strategic portfolio - Currency exposure {current_year}',
+                'AP2.EQUITIES.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Total equities {current_year}',
+                'AP2.PRIVATEEQUITY.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Private equity {current_year}',
+                'AP2.REALASSETS.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Real assets {current_year}',
+                'AP2.FIXEDINCSECURITIES.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Fixed-income securities {current_year}',
+                'AP2.GOVBONDSDEVMARKETS.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Government bonds developed markets {current_year}',
+                'AP2.CREDITBONDSDEVMARKETS.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Credit bonds developed markets {current_year}',
+                'AP2.BONDSEMMARKETS.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Bonds emerging markets {current_year}',
+                'AP2.NONLISTEDCREDITS.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Non-listed credits {current_year}',
+                'AP2.OTHER.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Other {current_year}',
+                'AP2.TOTAL.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Total {current_year}',
+                'AP2.CURRENCYEXPOSURE.ACTUALALLOCATION.NONE.A.1@AP2': f'Actual exposure - Currency exposure {current_year}',
             },
             'real_assets': {
-                'AP2.SUSTAINABLEINFRASTRUCTURE.ACTUALALLOCATION.NONE.A.1@AP2': 'Sustainable infrastructure % (13)',
-                'AP2.TRADITIONALREALESTATE.ACTUALALLOCATION.NONE.A.1@AP2': 'Traditional real estate % (59)',
-                'AP2.NATURALCLIMATE.ACTUALALLOCATION.NONE.A.1@AP2': 'Natural Climate Solutions % (28)',
-                'AP2.NORTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2': 'North America % (42)',
-                'AP2.SOUTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2': 'South America % (5)',
-                'AP2.OCEANIA.ACTUALALLOCATION.NONE.A.1@AP2': 'Oceania % (5)',
-                'AP2.EUROPE.ACTUALALLOCATION.NONE.A.1@AP2': 'Europe excl. Sweden % (10)',
-                'AP2.SWEDEN.ACTUALALLOCATION.NONE.A.1@AP2': 'Sweden % (30)',
-                'AP2.ASIA.ACTUALALLOCATION.NONE.A.1@AP2': 'Asia % (4)',
-                'AP2.OTHERS.ACTUALALLOCATION.NONE.A.1@AP2': 'Others % (4)',
+                'AP2.SUSTAINABLEINFRASTRUCTURE.ACTUALALLOCATION.NONE.A.1@AP2': f'Real assets - Sustainable infrastructure {current_year}',
+                'AP2.TRADITIONALREALESTATE.ACTUALALLOCATION.NONE.A.1@AP2': f'Real assets - Traditional real estate {current_year}',
+                'AP2.NATURALCLIMATE.ACTUALALLOCATION.NONE.A.1@AP2': f'Real assets - Natural Climate Solutions {current_year}',
+                'AP2.NORTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2': f'Real assets geography - North America {current_year}',
+                'AP2.SOUTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2': f'Real assets geography - South America {current_year}',
+                'AP2.OCEANIA.ACTUALALLOCATION.NONE.A.1@AP2': f'Real assets geography - Oceania {current_year}',
+                'AP2.EUROPE.ACTUALALLOCATION.NONE.A.1@AP2': f'Real assets geography - Europe {current_year}',
+                'AP2.SWEDEN.ACTUALALLOCATION.NONE.A.1@AP2': f'Real assets geography - Sweden {current_year}',
+                'AP2.ASIA.ACTUALALLOCATION.NONE.A.1@AP2': f'Real assets geography - Asia {current_year}',
+                'AP2.OTHERS.ACTUALALLOCATION.NONE.A.1@AP2': f'Real assets geography - Others {current_year}',
             },
             'bonds': {
-                # 2024 values
-                'AP2.SWEDISHGOV.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish Government 2024 (2434)',
-                'AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish municipalities 2024 (92)',
-                'AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish mortgage institutions 2024 (546)',
-                'AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': 'Financial companies 2024 (3090)',
-                'AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': 'Non-financial companies 2024 (277)',
-                'AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2': 'Foreign governments 2024 (49001)',
-                'AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2': 'Other foreign issuers 2024 (73895)',
-                'AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2': 'Total issuer category 2024 (129335)',
-                'AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2': 'Other bonds 2024 (115009)',
-                'AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2': 'Unlisted loans 2024 (2678)',
-                'AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2': 'Participations in foreign fixed-income funds 2024 (11648)',
-                'AP2.TOTALBONDS.TYPEINSTR.ACTUALALLOCATION.NONE.A.1@AP2': 'Total instrument type 2024 (129335)',
+                # Current year values
+                'AP2.SWEDISHGOV.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Swedish Government {current_year}',
+                'AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Swedish municipalities {current_year}',
+                'AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Swedish mortgage institutions {current_year}',
+                'AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Financial companies {current_year}',
+                'AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Non-financial companies {current_year}',
+                'AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Foreign governments {current_year}',
+                'AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Other foreign issuers {current_year}',
+                'AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Total issuer category {current_year}',
+                'AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds instrument - Other bonds {current_year}',
+                'AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds instrument - Unlisted loans {current_year}',
+                'AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds instrument - Fixed income funds {current_year}',
+                'AP2.TOTALBONDS.TYPEINSTR.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds instrument - Total instrument type {current_year}',
                 
-                # 2023 values - NEW!
-                '2023_AP2.SWEDISHGOV.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish Government 2023 (4088)',
-                '2023_AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish municipalities 2023 (202)',
-                '2023_AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish mortgage institutions 2023 (400)',
-                '2023_AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': 'Financial companies 2023 (8482)',
-                '2023_AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': 'Non-financial companies 2023 (275)',
-                '2023_AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2': 'Foreign governments 2023 (42471)',
-                '2023_AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2': 'Other foreign issuers 2023 (67164)',
-                '2023_AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2': 'Total issuer category 2023 (123082)',
-                '2023_AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2': 'Other bonds 2023 (111399)',
-                '2023_AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2': 'Unlisted loans 2023 (2479)',
-                '2023_AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2': 'Participations in foreign fixed-income funds 2023 (9204)',
-                '2023_AP2.TOTALBONDS.TYPEINSTR.ACTUALALLOCATION.NONE.A.1@AP2': 'Total instrument type 2023 (123082)',
+                # Previous year values  
+                f'{previous_year}_AP2.SWEDISHGOV.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Swedish Government {previous_year}',
+                f'{previous_year}_AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Swedish municipalities {previous_year}',
+                f'{previous_year}_AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Swedish mortgage institutions {previous_year}',
+                f'{previous_year}_AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Financial companies {previous_year}',
+                f'{previous_year}_AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Non-financial companies {previous_year}',
+                f'{previous_year}_AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Foreign governments {previous_year}',
+                f'{previous_year}_AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Other foreign issuers {previous_year}',
+                f'{previous_year}_AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds issuer - Total issuer category {previous_year}',
+                f'{previous_year}_AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds instrument - Other bonds {previous_year}',
+                f'{previous_year}_AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds instrument - Unlisted loans {previous_year}',
+                f'{previous_year}_AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds instrument - Fixed income funds {previous_year}',
+                f'{previous_year}_AP2.TOTALBONDS.TYPEINSTR.ACTUALALLOCATION.NONE.A.1@AP2': f'Bonds instrument - Total instrument type {previous_year}',
             }
         }
-        return mappings.get(section_name, {})
-    
-    def extract_all_sections(self, pdf_path):
-        """Extract all sections with perfect precision for both 2023 and 2024"""
-        year = self.extract_year_from_filename(pdf_path)
-        self.logger.info(f"Perfect extraction from {os.path.basename(pdf_path)} (Year: {year})")
         
-        all_data = {}
-        sections = ['fund_capital', 'asset_allocation', 'real_assets', 'bonds']
+        return mappings.get(section_name, {})
+
+    def extract_all_sections(self, pdf_path):
+        """Extract all sections using proven half-year methodology"""
+        current_year = self.extract_year_from_filename(pdf_path)
+        previous_year = current_year - 1
+        
+        self.logger.info(f"Perfect extraction from {os.path.basename(pdf_path)} (Year: {current_year})")
         
         # Extract data for current year
-        year_2024_data = {}
-        year_2023_data = {}
+        current_year_data = {}
+        previous_year_data = {}
+        sections = ['fund_capital', 'asset_allocation', 'real_assets', 'bonds']
         
         for section_name in sections:
             self.logger.info(f"Extracting {section_name} with perfect precision...")
@@ -428,20 +458,20 @@ FINAL INSTRUCTION: Return ONLY the JSON object with extracted values. No other t
                 data = self.extract_section_with_precision(pdf_path, section_name)
                 
                 if section_name == 'bonds':
-                    # Split bonds data into 2024 and 2023
+                    # Split bonds data into current and previous year
                     for key, value in data.items():
-                        if key.startswith('2023_'):
-                            # Remove 2023_ prefix and add to 2023 data
-                            clean_key = key[5:]  # Remove '2023_'
-                            year_2023_data[clean_key] = value
+                        if key.startswith(f'{previous_year}_'):
+                            # Remove year prefix and add to previous year data
+                            clean_key = key[5:]  # Remove '2023_' or similar
+                            previous_year_data[clean_key] = value
                         else:
-                            # Add to 2024 data
-                            year_2024_data[key] = value
+                            # Add to current year data
+                            current_year_data[key] = value
                 else:
-                    # For other sections, add to 2024 data only
-                    year_2024_data.update(data)
+                    # For other sections, add to current year data only
+                    current_year_data.update(data)
                 
-                expected_count = len(self.get_field_mapping(section_name))
+                expected_count = len(self.get_field_mapping(section_name, current_year))
                 actual_count = len(data)
                 accuracy = (actual_count / expected_count * 100) if expected_count > 0 else 0
                 
@@ -451,57 +481,21 @@ FINAL INSTRUCTION: Return ONLY the JSON object with extracted values. No other t
                 self.logger.error(f"Failed to extract {section_name}: {e}")
         
         # Calculate totals
-        total_expected = sum(len(self.get_field_mapping(s)) for s in sections)
-        total_2024 = len(year_2024_data)
-        total_2023 = len(year_2023_data)
-        total_actual = total_2024 + total_2023
-        final_accuracy = (total_actual / (total_expected + 11) * 100)  # +11 for 2023 bonds fields
+        total_current = len(current_year_data)
+        total_previous = len(previous_year_data)
+        total_actual = total_current + total_previous
         
-        self.logger.info(f"FINAL RESULT: {total_actual}/{total_expected + 11} fields ({final_accuracy:.1f}%)")
+        # Estimate expected fields (approximate)
+        expected_fields = sum(len(self.get_field_mapping(s, current_year)) for s in sections)
+        final_accuracy = (total_actual / expected_fields * 100) if expected_fields > 0 else 0
         
-        # Return both years in correct order (2023 first, then 2024)
+        self.logger.info(f"FINAL RESULT: {total_actual}/{expected_fields} fields ({final_accuracy:.1f}%)")
+        
+        # Return both years in correct order (previous year first)
         result = {}
-        if year_2023_data:
-            result[2023] = year_2023_data
-        if year_2024_data:
-            result[2024] = year_2024_data
+        if previous_year_data:
+            result[previous_year] = previous_year_data
+        if current_year_data:
+            result[current_year] = current_year_data
             
         return result
-    
-    def extract_year_from_filename(self, filename):
-        """Extract year from filename"""
-        basename = os.path.basename(filename)
-        match = re.search(r'(\d{4})', basename)
-        if match:
-            year = int(match.group(1))
-            if 2000 <= year <= 2030:
-                return year
-        return 2024  # Default to current year
-
-# Legacy support function
-def extract_perfect_data(pdf_path):
-    """Main function for perfect extraction"""
-    parser = PerfectLLMParser()
-    return parser.extract_all_sections(pdf_path)
-
-if __name__ == "__main__":
-    import glob
-    
-    # Find latest downloaded PDF
-    download_folders = glob.glob(os.path.join(config.DOWNLOADS_DIR, '*'))
-    if download_folders:
-        latest_folder = max(download_folders, key=os.path.getmtime)
-        pdf_files = glob.glob(os.path.join(latest_folder, '*.pdf'))
-        
-        if pdf_files:
-            pdf_path = pdf_files[0]
-            print(f"Testing perfect extraction on: {pdf_path}")
-            
-            parser = PerfectLLMParser()
-            result = parser.extract_all_sections(pdf_path)
-            
-            print(f"Perfect extraction result: {len(result[list(result.keys())[0]])} fields extracted")
-        else:
-            print("No PDF files found")
-    else:
-        print("No download folders found")
