@@ -145,61 +145,120 @@ Return JSON like: {{"AP2.FUNDCAPITALCARRIEDFORWARD.LEVEL.NONE.A.1@AP2": 458884, 
 
         elif section_name == 'asset_allocation':
             specific_instructions = f"""
-SECTION: Asset Allocation and Portfolio Distribution
+SECTION: Asset Allocation - ULTRA-PRECISE EXTRACTION RULES
 
-STEP 1: Locate the specific "Asset class exposure" table
-- Look for the exact heading: "Asset class exposure at 31 December {current_year}"
-- This table appears around page 49 in the "Result and performance" section
-- The table has these exact columns: "Strategic asset allocation, %" and "Actual portfolio exposure %"
+CRITICAL MISSION: Extract ONLY explicit data rows that exist in the table. DO NOT calculate, derive, or hallucinate ANY values.
 
-STEP 2: Identify the table structure - CRITICAL PATTERN RECOGNITION
+STEP 1: Locate the EXACT table "Asset class exposure at 31 December {current_year}"
+- This appears in the "Result and performance" section around page 49
+- Table has columns: "Asset class" | "Strategic asset allocation, %" | "%" | "SEK billion"
+
+STEP 2: VISUAL TABLE STRUCTURE RECOGNITION
 The table looks like this:
-Asset class                           Strategic asset    Actual portfolio exposure
-                                     allocation, %      %        SEK billion
+```
+Asset class                           Strategic asset    %        SEK billion
+                                     allocation, %               
 Swedish equities                           9              10          45
 Developed markets equities                20              20          94
 Emerging markets equities                 10              10          44
 Private equity                            10              13          60
 Real assets                               18              18          82
-[Fixed-income securities section]
+                                          67              71         326  ← IGNORE THIS SUBTOTAL LINE
+Fixed-income securities                                              136  ← IGNORE THIS HEADER LINE
 Government bonds in developed markets     13              11          49
 Credit bonds in developed markets         11              10          46
 Bonds in emerging markets                  5               5          22
 Non-listed credits                         4               4          19
-Other                                      -              -1          -3
+                                          33              30         136  ← IGNORE THIS SUBTOTAL LINE
+Other**                                                   -1          -3
 Total                                    100             100         459
-Currency exposure                         31              24          -
+Currency exposure                         31              24
+```
 
-STEP 3: Extract percentages from BOTH columns for {current_year}
-- Strategic allocation percentages (column 2): Target allocations
-- Actual exposure percentages (column 3): Current actual allocations
-- DO NOT extract the SEK billion amounts - only the percentages
+STEP 3: EXTRACTION RULES - FOLLOW EXACTLY
+EXTRACT these specific rows that have EXPLICIT VALUES:
+From "Strategic asset allocation, %" column:
+- Swedish equities: 9
+- Developed markets equities: 20
+- Emerging markets equities: 10
+- Private equity: 10
+- Real assets: 18
+- Government bonds in developed markets: 13
+- Credit bonds in developed markets: 11
+- Bonds in emerging markets: 5
+- Non-listed credits: 4
+- Total: 100
+- Currency exposure: 31
 
-STEP 4: Content-based field mapping
-From the "Strategic asset allocation, %" column extract:
-- Swedish equities: [extract percentage]
-- Developed markets equities: [extract percentage]  
-- Emerging markets equities: [extract percentage]
-- Private equity: [extract percentage]
-- Real assets: [extract percentage]
-- Government bonds in developed markets: [extract percentage]
-- Credit bonds in developed markets: [extract percentage]
-- Bonds in emerging markets: [extract percentage]
-- Non-listed credits: [extract percentage]
-- Other: [extract percentage] (may be negative or blank)
-- Total: [extract percentage] (should be 100)
-- Currency exposure: [extract percentage]
+From "%" (Actual exposure) column:
+- Swedish equities: 10
+- Developed markets equities: 20
+- Emerging markets equities: 10
+- Private equity: 13
+- Real assets: 18
+- Government bonds in developed markets: 11
+- Credit bonds in developed markets: 10
+- Bonds in emerging markets: 5
+- Non-listed credits: 4
+- Other: -1
+- Total: 100
+- Currency exposure: 24
 
-From the "Actual portfolio exposure %" column extract the same categories.
+STEP 4: DO NOT EXTRACT (LEAVE BLANK) - CRITICAL
+These are SECTION HEADERS or SUBTOTAL LINES - DO NOT extract values for these:
+- "Equities" (this is a section header, not a data row)
+- "Fixed-income securities" (this is a section header, not a data row)
+- Any line with values 67, 71, 33, 30 (these are subtotal calculations)
+- "Other" in Strategic column (no value present in this report)
 
-CRITICAL SUCCESS FACTORS:
-- Find the table with EXACT heading "Asset class exposure at 31 December {current_year}"
-- Extract from BOTH Strategic and Actual percentage columns
-- This is typically on page 49 in the "Result and performance" section
-- Values are percentages (9, 10, 18, etc.) NOT billions
-- Handle negative values (Other may be -1)
+STEP 5: ULTRA-SPECIFIC FIELD MAPPING
+Map extracted values to these EXACT fields:
+- AP2.DOMESTICEQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 9 (Swedish equities strategic)
+- AP2.DEVELOPEDEQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 20 (Developed markets strategic)
+- AP2.EMERGINGEQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 10 (Emerging markets strategic)
+- AP2.EQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: null (BLANK - not in table)
+- AP2.PRIVATEEQUITY.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 10 (Private equity strategic)
+- AP2.REALASSETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 18 (Real assets strategic)
+- AP2.FIXEDINCSECURITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: null (BLANK - section header only)
+- AP2.GOVBONDSDEVMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 13 (Government bonds strategic)
+- AP2.CREDITBONDSDEVMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 11 (Credit bonds strategic)
+- AP2.BONDSEMMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 5 (Bonds emerging strategic)
+- AP2.NONLISTEDCREDITS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 4 (Non-listed credits strategic)
+- AP2.OTHER.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: null (BLANK - no value in strategic column)
+- AP2.TOTAL.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 100 (Total strategic)
+- AP2.CURRENCYEXPOSURE.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2: 31 (Currency exposure strategic)
 
-Return JSON with all available allocation percentages for {current_year}.
+- AP2.DOMESTICEQUITIES.ACTUALALLOCATION.NONE.A.1@AP2: 10 (Swedish equities actual)
+- AP2.DEVELOPEDEQUITIES.ACTUALALLOCATION.NONE.A.1@AP2: 20 (Developed markets actual)
+- AP2.EMEQUITIES.ACTUALALLOCATION.NONE.A.1@AP2: 10 (Emerging markets actual)
+- AP2.EQUITIES.ACTUALALLOCATION.NONE.A.1@AP2: null (BLANK - not in table)
+- AP2.PRIVATEEQUITY.ACTUALALLOCATION.NONE.A.1@AP2: 13 (Private equity actual)
+- AP2.REALASSETS.ACTUALALLOCATION.NONE.A.1@AP2: 18 (Real assets actual)
+- AP2.FIXEDINCSECURITIES.ACTUALALLOCATION.NONE.A.1@AP2: null (BLANK - section header only)
+- AP2.GOVBONDSDEVMARKETS.ACTUALALLOCATION.NONE.A.1@AP2: 11 (Government bonds actual)
+- AP2.CREDITBONDSDEVMARKETS.ACTUALALLOCATION.NONE.A.1@AP2: 10 (Credit bonds actual)
+- AP2.BONDSEMMARKETS.ACTUALALLOCATION.NONE.A.1@AP2: 5 (Bonds emerging actual)
+- AP2.NONLISTEDCREDITS.ACTUALALLOCATION.NONE.A.1@AP2: 4 (Non-listed credits actual)
+- AP2.OTHER.ACTUALALLOCATION.NONE.A.1@AP2: -1 (Other actual)
+- AP2.TOTAL.ACTUALALLOCATION.NONE.A.1@AP2: 100 (Total actual)
+- AP2.CURRENCYEXPOSURE.ACTUALALLOCATION.NONE.A.1@AP2: 24 (Currency exposure actual)
+
+CRITICAL SUCCESS CHECKLIST:
+✓ ONLY extract rows with explicit percentage values next to asset names
+✓ IGNORE all subtotal lines (67, 71, 33, 30)
+✓ IGNORE all section headers without data ("Equities", "Fixed-income securities")
+✓ Use null for any field that doesn't have an explicit value in the table
+✓ Extract exactly 12 strategic values and 14 actual values as specified above
+✓ Values must match: 9,20,10,null,10,18,null,13,11,5,4,null,100,31 and 10,20,10,null,13,18,null,11,10,5,4,-1,100,24
+
+ABSOLUTE PROHIBITION:
+- DO NOT extract calculated subtotals (67, 71, 33, 30)
+- DO NOT extract section header lines
+- DO NOT calculate or derive any values
+- DO NOT assume missing fields should be calculated
+- If a field is not explicitly shown with a number, return null
+
+Return JSON with EXACTLY the fields and values specified above.
 """
 
         elif section_name == 'real_assets':
