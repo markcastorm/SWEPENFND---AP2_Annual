@@ -407,8 +407,9 @@ class RobustPDFParser:
             # Use Perfect LLM extraction for all sections
             result = self.perfect_llm.extract_all_sections(pdf_path)
             
-            total_fields = len(result.get(year, {}))
-            expected_fields = len(config.OUTPUT_HEADERS) - 1  # Minus index column
+            # Count total fields across all years
+            total_fields = sum(len(data) for data in result.values())
+            expected_fields = len(config.OUTPUT_HEADERS) - 1 + 11  # Minus index column + 2023 bonds
             accuracy = (total_fields / expected_fields * 100) if expected_fields > 0 else 0
             
             self.logger.info(f"Perfect LLM extraction completed: {total_fields}/{expected_fields} fields ({accuracy:.1f}%)")

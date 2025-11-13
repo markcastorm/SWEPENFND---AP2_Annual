@@ -60,6 +60,7 @@ OUTPUT_HEADERS = [
     'AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
     'AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
     'AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.TOTALBONDS.TYPEINSTR.ACTUALALLOCATION.NONE.A.1@AP2',  # Added - NEW MISSING FIELD
 ]
 
 # Human-readable sub-headers (Row 2 in Excel) - EXACT match to sample
@@ -117,6 +118,7 @@ OUTPUT_SUBHEADERS = [
     'AP2 annual: Bonds and other fixed-income securities, Other bonds',  # Added
     'AP2 annual: Bonds and other fixed-income securities, Unlisted loans',  # Added
     'AP2 annual: Bonds and other fixed-income securities, Participations in foreign fixed-income funds',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Total (Instrument Type)',  # Added - NEW MISSING FIELD
 ]
 
 # Readable header mapping for reference
@@ -153,40 +155,40 @@ HEADER_MAPPING = {
     'Total (Exposure)': 'AP2.TOTAL.ACTUALALLOCATION.NONE.A.1@AP2',
     'Currency Exposure (Exposure)': 'AP2.CURRENCYEXPOSURE.ACTUALALLOCATION.NONE.A.1@AP2',
     'Sustainable Infrastructure (Alternative Investments)': 'AP2.SUSTAINABLEINFRASTRUCTURE.ACTUALALLOCATION.NONE.A.1@AP2',
-    'Traditional Real Estate (Real Assets, Portfolio Distribution)': 'AP2.TRADITIONALREALESTATE.ACTUALALLOCATION.NONE.A.1@AP2',
-    'Natural Climate Solutions (Real Assets, Portfolio Distribution)': 'AP2.NATURALCLIMATE.ACTUALALLOCATION.NONE.A.1@AP2',
-    'North America (Real Assets, Geographical Distribution)': 'AP2.NORTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'South America (Real Assets, Geographical Distribution)': 'AP2.SOUTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'Oceania (Real Assets, Geographical Distribution)': 'AP2.OCEANIA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'Europe (Real Assets, Geographical Distribution)': 'AP2.EUROPE.ACTUALALLOCATION.NONE.A.1@AP2',  # Changed from Europe (excl. Sweden)
-    'Sweden (Real Assets, Geographical Distribution)': 'AP2.SWEDEN.ACTUALALLOCATION.NONE.A.1@AP2',
-    'Asia (Real Assets, Geographical Distribution)': 'AP2.ASIA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'Others (Real Assets, Geographical Distribution)': 'AP2.OTHERS.ACTUALALLOCATION.NONE.A.1@AP2',
+    'Traditional Real Estate (Real Assets Portfolio distribution)': 'AP2.TRADITIONALREALESTATE.ACTUALALLOCATION.NONE.A.1@AP2',
+    'Natural Climate Solutions (Real Assets Portfolio distribution)': 'AP2.NATURALCLIMATE.ACTUALALLOCATION.NONE.A.1@AP2',
+    'North America (Real Assets Geographical distribution)': 'AP2.NORTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2',
+    'South America (Real Assets Geographical distribution)': 'AP2.SOUTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2',
+    'Oceania (Real Assets Geographical distribution)': 'AP2.OCEANIA.ACTUALALLOCATION.NONE.A.1@AP2',
+    'Europe (Real Assets Geographical distribution)': 'AP2.EUROPE.ACTUALALLOCATION.NONE.A.1@AP2',
+    'Sweden (Real Assets Geographical distribution)': 'AP2.SWEDEN.ACTUALALLOCATION.NONE.A.1@AP2',
+    'Asia (Real Assets Geographical distribution)': 'AP2.ASIA.ACTUALALLOCATION.NONE.A.1@AP2',
+    'Others (Real Assets Geographical distribution)': 'AP2.OTHERS.ACTUALALLOCATION.NONE.A.1@AP2',
     'Swedish Government (Bonds and other fixed-income securities)': 'AP2.SWEDISHGOV.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
-    'Swedish municipalities (Bonds and other fixed-income securities)': 'AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
-    'Swedish mortgage institutions (Bonds and other fixed-income securities)': 'AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
-    'Financial companies (Bonds and other fixed-income securities)': 'AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
-    'Non-financial companies (Bonds and other fixed-income securities)': 'AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
-    'Foreign governments (Bonds and other fixed-income securities)': 'AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
-    'Other foreign issuers (Bonds and other fixed-income securities)': 'AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
-    'Total (Issuer Category) (Bonds and other fixed-income securities)': 'AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
-    'Other bonds (Bonds and other fixed-income securities)': 'AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
-    'Unlisted loans (Bonds and other fixed-income securities)': 'AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Swedish Municipalities (Bonds and other fixed-income securities)': 'AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Swedish Mortgage Institutions (Bonds and other fixed-income securities)': 'AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Financial Companies (Bonds and other fixed-income securities)': 'AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Non-financial Companies (Bonds and other fixed-income securities)': 'AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Foreign Governments (Bonds and other fixed-income securities)': 'AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Other Foreign Issuers (Bonds and other fixed-income securities)': 'AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Total Issuer Category (Bonds and other fixed-income securities)': 'AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Other Bonds (Bonds and other fixed-income securities)': 'AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Unlisted Loans (Bonds and other fixed-income securities)': 'AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
     'Participations in foreign fixed-income funds (Bonds and other fixed-income securities)': 'AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Total Instrument Type (Bonds and other fixed-income securities)': 'AP2.TOTALBONDS.TYPEINSTR.ACTUALALLOCATION.NONE.A.1@AP2',  # Added - NEW MISSING FIELD
 }
 
 # ============================================================================
-# SCRAPING CONFIGURATION
+# SCRAPER CONFIGURATION
 # ============================================================================
 
-# Website URL
-BASE_URL = "https://ap2.se/en/news-and-reports/reports/financial-reports/"
+# Target website
+BASE_URL = 'https://ap2.se/en/news-and-reports/reports/financial-reports/'
 
-# Year settings
-# Set TARGET_YEAR to a specific year (e.g., 2024) or "latest" to scrape the most recent year
-TARGET_YEAR = 2024  # Options: "latest" or specific year like 2024, 2023, etc.
+# Target year for scraping (can be a year like 2024, or "latest" for most recent)
+TARGET_YEAR = 2024  # Changed from "latest" to 2024
 
-# Alternative: Set specific years to scrape (if TARGET_YEAR is not "latest")
+# Multiple years scraping (overrides TARGET_YEAR if set)
 # YEARS_TO_SCRAPE = [2024, 2023, 2022]  # Can be a list of years
 YEARS_TO_SCRAPE = None  # Set to None to use TARGET_YEAR setting
 

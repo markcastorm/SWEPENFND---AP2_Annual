@@ -223,11 +223,13 @@ Total                                      129 335        123 082
 
 EXTRACTION STRATEGY:
 1. Find "Note 9" table with exact structure above
-2. Extract ALL values from 31 Dec 2024 column
-3. Return nested JSON with both 2024 and 2023 data if available
-4. Map each row to corresponding JSON keys
+2. Extract ALL values from BOTH 31 Dec 2024 AND 31 Dec 2023 columns
+3. Return nested JSON with separate objects for 2024 and 2023 data
+4. Use keys like "2024_swedish_gov" and "2023_swedish_gov" to distinguish years
 
-CRITICAL: 2024 values must be EXACTLY: 2434, 92, 546, 3090, 277, 49001, 73895, 129335, 115009, 2678, 11648, 129335
+CRITICAL: Must extract BOTH years:
+- 2024 values: 2434, 92, 546, 3090, 277, 49001, 73895, 129335, 115009, 2678, 11648, 129335
+- 2023 values: 4088, 202, 400, 8482, 275, 42471, 67164, 123082, 111399, 2479, 9204, 123082
 """
 
         else:
@@ -377,34 +379,67 @@ FINAL INSTRUCTION: Return ONLY the JSON object with extracted values. No other t
                 'AP2.OTHERS.ACTUALALLOCATION.NONE.A.1@AP2': 'Others % (4)',
             },
             'bonds': {
-                'AP2.SWEDISHGOV.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish Government (2434)',
-                'AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish municipalities (92)',
-                'AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish mortgage institutions (546)',
-                'AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': 'Financial companies (3090)',
-                'AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': 'Non-financial companies (277)',
-                'AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2': 'Foreign governments (49001)',
-                'AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2': 'Other foreign issuers (73895)',
-                'AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2': 'Total issuer category (129335)',
-                'AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2': 'Other bonds (115009)',
-                'AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2': 'Unlisted loans (2678)',
-                'AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2': 'Participations in foreign fixed-income funds (11648)',
+                # 2024 values
+                'AP2.SWEDISHGOV.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish Government 2024 (2434)',
+                'AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish municipalities 2024 (92)',
+                'AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish mortgage institutions 2024 (546)',
+                'AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': 'Financial companies 2024 (3090)',
+                'AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': 'Non-financial companies 2024 (277)',
+                'AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2': 'Foreign governments 2024 (49001)',
+                'AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2': 'Other foreign issuers 2024 (73895)',
+                'AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2': 'Total issuer category 2024 (129335)',
+                'AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2': 'Other bonds 2024 (115009)',
+                'AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2': 'Unlisted loans 2024 (2678)',
+                'AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2': 'Participations in foreign fixed-income funds 2024 (11648)',
+                'AP2.TOTALBONDS.TYPEINSTR.ACTUALALLOCATION.NONE.A.1@AP2': 'Total instrument type 2024 (129335)',
+                
+                # 2023 values - NEW!
+                '2023_AP2.SWEDISHGOV.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish Government 2023 (4088)',
+                '2023_AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish municipalities 2023 (202)',
+                '2023_AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2': 'Swedish mortgage institutions 2023 (400)',
+                '2023_AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': 'Financial companies 2023 (8482)',
+                '2023_AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2': 'Non-financial companies 2023 (275)',
+                '2023_AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2': 'Foreign governments 2023 (42471)',
+                '2023_AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2': 'Other foreign issuers 2023 (67164)',
+                '2023_AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2': 'Total issuer category 2023 (123082)',
+                '2023_AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2': 'Other bonds 2023 (111399)',
+                '2023_AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2': 'Unlisted loans 2023 (2479)',
+                '2023_AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2': 'Participations in foreign fixed-income funds 2023 (9204)',
+                '2023_AP2.TOTALBONDS.TYPEINSTR.ACTUALALLOCATION.NONE.A.1@AP2': 'Total instrument type 2023 (123082)',
             }
         }
         return mappings.get(section_name, {})
     
     def extract_all_sections(self, pdf_path):
-        """Extract all sections with perfect precision"""
+        """Extract all sections with perfect precision for both 2023 and 2024"""
         year = self.extract_year_from_filename(pdf_path)
         self.logger.info(f"Perfect extraction from {os.path.basename(pdf_path)} (Year: {year})")
         
         all_data = {}
         sections = ['fund_capital', 'asset_allocation', 'real_assets', 'bonds']
         
+        # Extract data for current year
+        year_2024_data = {}
+        year_2023_data = {}
+        
         for section_name in sections:
             self.logger.info(f"Extracting {section_name} with perfect precision...")
             try:
                 data = self.extract_section_with_precision(pdf_path, section_name)
-                all_data.update(data)
+                
+                if section_name == 'bonds':
+                    # Split bonds data into 2024 and 2023
+                    for key, value in data.items():
+                        if key.startswith('2023_'):
+                            # Remove 2023_ prefix and add to 2023 data
+                            clean_key = key[5:]  # Remove '2023_'
+                            year_2023_data[clean_key] = value
+                        else:
+                            # Add to 2024 data
+                            year_2024_data[key] = value
+                else:
+                    # For other sections, add to 2024 data only
+                    year_2024_data.update(data)
                 
                 expected_count = len(self.get_field_mapping(section_name))
                 actual_count = len(data)
@@ -415,13 +450,23 @@ FINAL INSTRUCTION: Return ONLY the JSON object with extracted values. No other t
             except Exception as e:
                 self.logger.error(f"Failed to extract {section_name}: {e}")
         
+        # Calculate totals
         total_expected = sum(len(self.get_field_mapping(s)) for s in sections)
-        total_actual = len(all_data)
-        final_accuracy = (total_actual / total_expected * 100) if total_expected > 0 else 0
+        total_2024 = len(year_2024_data)
+        total_2023 = len(year_2023_data)
+        total_actual = total_2024 + total_2023
+        final_accuracy = (total_actual / (total_expected + 11) * 100)  # +11 for 2023 bonds fields
         
-        self.logger.info(f"FINAL RESULT: {total_actual}/{total_expected} fields ({final_accuracy:.1f}%)")
+        self.logger.info(f"FINAL RESULT: {total_actual}/{total_expected + 11} fields ({final_accuracy:.1f}%)")
         
-        return {year: all_data}
+        # Return both years in correct order (2023 first, then 2024)
+        result = {}
+        if year_2023_data:
+            result[2023] = year_2023_data
+        if year_2024_data:
+            result[2024] = year_2024_data
+            
+        return result
     
     def extract_year_from_filename(self, filename):
         """Extract year from filename"""
