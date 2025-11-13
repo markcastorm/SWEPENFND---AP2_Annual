@@ -268,7 +268,7 @@ FINAL INSTRUCTION: Return ONLY the JSON object with extracted values. No other t
         
         try:
             response = self.client.chat.completions.create(
-                model="anthropic/claude-3-sonnet-20240229",  # Use most capable model
+                model="qwen/qwen-2.5-coder-32b-instruct",  # Use your available model
                 messages=[
                     {"role": "system", "content": "You are a precision financial data extraction expert. Return only valid JSON with exact numerical values."},
                     {"role": "user", "content": prompt}

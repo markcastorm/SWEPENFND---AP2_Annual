@@ -1,0 +1,83 @@
+this is what is being extracted from the report as you see it matches that data in our sample data exactly analyze no code yet ( based on the run book we are supposed to find this (Five-year overview ) ggues we will have to do a key word search on this to I dentify this table on this bage we I dentify this table (Fund capital, flows and results) we match the fields this way to the output this is an example of 2024 ananual report
+
+'AP2 annual: Fund capital carried forward',= Fund capital=458 884
+'AP2 annual: Net outflows to the national pension system'= Net outflows to the national pension system,=–2 024
+'AP2 annual: Net result for the year',=Net result for the year=34 868
+
+next up we are navigating to this table (Navigate to the table titled "Asset class exposure". Capture each line from the "Strategic Portfolio, %" and " %" (2nd column) columns as an individual, annual DF series) hear we perform a key word search of this table (Asset class exposure)
+(
+'AP2 annual: Strategic portfolio - Swedish equities',=Swedish equities=9
+'AP2 annual: Strategic portfolio - Developed markets equities',= Developed markets equities = 20
+'AP2 annual: Strategic portfolio - Emerging markets equities',= Emerging markets equities = 10
+) from this column on the table (Strategic asset
+allocation, %)
+the next is from the second column( " %" (2nd column) )
+('AP2 annual: Exposure - Swedish equities',= Swedish equities = 10
+'AP2 annual: Exposure - Developed markets equities',= Developed markets equities =20
+'AP2 annual: Exposure - Emerging markets equities', = Emerging markets equities = 10
+)
+
+from this column on the table (Strategic asset
+allocation, %)(
+'AP2 annual: Strategic portfolio - Equities', for this instance its gonna be blank since its not on this table this time if its there in another report pick it
+'AP2 annual: Strategic portfolio - Private Equity',= Private equity =10
+'AP2 annual: Strategic portfolio - Real assets',= Real assets =18
+'AP2 annual: Strategic portfolio - Fixed-income securities',=Fixed-income securities=blank since there is no value on this report if its there in another report pick it
+'AP2 annual: Strategic portfolio - Government bonds in developed markets',= Government bonds in developed markets= 13
+'AP2 annual: Strategic portfolio - Credit bonds in developed markets',= Credit bonds in developed markets =11
+'AP2 annual: Strategic portfolio - Bonds in emerging markets',= Bonds in emerging markets = 5
+'AP2 annual: Strategic portfolio - Non-listed credits',= Non-listed credits = 4
+'AP2 annual: Strategic portfolio - Other',= Other** =for now blank since ther is no value in this report if its there in another report pick it
+'AP2 annual: Strategic portfolio - Total',=Total=100
+'AP2 annual: Strategic portfolio - Currency exposure',=Currency exposure =31)
+from the second column( " %" (2nd column) )(
+'AP2 annual: Exposure - Equities',= Equities=blank since there is no value on this report if its there in another report pick it
+'AP2 annual: Alternative investments - Private equity',=Private equity=13
+'AP2 annual: Exposure - Real assets',= Real assets = 18
+'AP2 annual: Exposure - Fixed-income securities',==Fixed-income securities=blank since there is no value on this report if its there in another report pick it
+'AP2 annual: Exposure - Government bonds in developed markets',=Government bonds in developed markets=11
+'AP2 annual: Exposure - Credit bonds in developed markets',=Credit bonds in developed markets=10
+'AP2 annual: Exposure - Bonds in emerging markets',=Bonds in emerging markets=5
+'AP2 annual: Exposure - Non-listed credits',Non-listed credits=4
+'AP2 annual: Exposure - Other',Other**=-1
+'AP2 annual: Exposure - Total',=Total=100
+'AP2 annual: Exposure - Currency exposure',=Currency exposure=24)
+
+Navigate to the Pie-Chart titled "Real assets". Capture each line item from the PIE-Chart as an individual, annual measures. the title of the pie chats are portfolio didstribution and Geographical distribution but there header title is Real assets
+this for the first pie chart (Natural Climate Solutions)
+( 'AP2 annual: Alternative investments - Sustainable infrastructure',=Sustainable infrastructure =13
+'AP2 annual: Real Assets, Portfolio distribution - Traditional real estate',=Traditional real estate=59
+'AP2 annual: Real Assets, Portfolio distribution - Natural Climate Solutions',=Natural Climate Solutions=28
+)
+this is for the second pie chart (Geographical distribution)
+'AP2 annual: Real Assets, Geographical distribution - North America',= North America =42
+'AP2 annual: Real Assets, Geographical distribution - South America',=South America=5
+'AP2 annual: Real Assets, Geographical distribution - Oceania',=Oceania=5
+'AP2 annual: Real Assets, Geographical distribution - Europe',=Europe (excl. Sweden)=10
+'AP2 annual: Real Assets, Geographical distribution - Sweden',=Sweden=30
+'AP2 annual: Real Assets, Geographical distribution - Asia',=Asia=4
+'AP2 annual: Real Assets, Geographical distribution - Others',=Others=4)
+Collect values for both years for each line item for the table from report below:(
+
+Collect values for both years for each line item for the table from report below: we are finding the table called ( Bonds and other fixed-income securities) you can see that in a screenshot we will be collecting for 2years stated in the table for this instance it is we have columns headers like(31 Dec 2024)and (31 Dec 2023) meaning we are collecting for 2 years that is 2024 and 2023 ,we already have a row for 2024 on the output we will add a row for 2023 then add those values to corresponding collumns
+
+
+'AP2 annual: Bonds and other fixed-income securities, Swedish Government',=Swedish Government=2434 (for 2024 column) and =4088 (for 2023 column)
+'AP2 annual: Bonds and other fixed-income securities, Swedish municipalities',=Swedish municipalities=92 (for 2024 column) and =202 (for 2023 column)
+'AP2 annual: Bonds and other fixed-income securities, Swedish mortgage institutions',=Swedish mortgage institutions=92 (for 2024 column) and =202 (for 2023 column)
+'AP2 annual: Bonds and other fixed-income securities, Financial companies', =Financial companies=546 (for 2024 column) and =400 (for 2023 column)
+'AP2 annual: Bonds and other fixed-income securities, Non-financial companies',=Non-financial companies=277 (for 2024 column) and =275 (for 2023 column)
+'AP2 annual: Bonds and other fixed-income securities, Foreign governments', = Foreign governments=49001 (for 2024 column) and =42471 (for 2023 column)
+'AP2 annual: Bonds and other fixed-income securities, Other foreign issuers',= Other foreign issuers=73895 (for 2024 column) and =73895 (for 2023 column)
+'AP2 annual: Bonds and other fixed-income securities, Total (Issuer Category)', = Total=129335 (for 2024 column) and =111 399 (for 2023 column)
+
+from this category (Breakdown by type of instrument) in the same table
+'AP2 annual: Bonds and other fixed-income securities, Other bonds', =Other bonds=115009 (for 2024 column) and =123082 (for 2023 column)
+'AP2 annual: Bonds and other fixed-income securities, Unlisted loans', =Unlisted loans=2678 (for 2024 column) and =2479 (for 2023 column)
+'AP2 annual: Bonds and other fixed-income securities, Participations in foreign fixed-income funds', =Participations in foreign fixed-income
+funds=111648 (for 2024 column) and =9204 (for 2023 column)
+'AP2 annual: Bonds and other fixed-income securities, Total (Instrument Type)' =Total=129335 (for 2024 column) and =123082 (for 2023 column)
+
+
+
+)( you can see even from the screen shots it matchess analyze first lets discuss

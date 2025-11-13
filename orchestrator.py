@@ -101,8 +101,8 @@ def main():
         sys.exit(1)
 
     # Step 2: Run Parser
-    logger.info("\n[STEP 2/2] Running Enhanced PDF Parser...")
-    parser_success = run_script('pdf_parser_enhanced.py', 'Enhanced PDF Parser (Table Extraction)')
+    logger.info("\n[STEP 2/2] Running New Robust PDF Parser...")
+    parser_success = run_script('pdf_parser_new.py', 'New Robust PDF Parser (Keyword + LLM Extraction)')
 
     if not parser_success:
         logger.error("=" * 80)

@@ -45,49 +45,26 @@ OUTPUT_HEADERS = [
     'AP2.NORTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2',
     'AP2.SOUTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2',
     'AP2.OCEANIA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.EUROPEEXCLSWEDEN.ACTUALALLOCATION.NONE.A.1@AP2',
+    'AP2.EUROPE.ACTUALALLOCATION.NONE.A.1@AP2',  # Changed from EUROPEEXCLSWEDEN
     'AP2.SWEDEN.ACTUALALLOCATION.NONE.A.1@AP2',
     'AP2.ASIA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.AFRICA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.TOTAL.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.EQUITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.PRIVATEEQUITY.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.REALASSETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.FIXEDINCSECURITIES.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.GOVBONDSDEVMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.CREDITBONDSDEVMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.BONDSEMMARKETS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.NONLISTEDCREDITS.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.OTHER.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.TOTAL.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.CURRENCYEXPOSURE.ACTUALALLOCATION.STRATEGICPORTFOLIO.NONE.A.1@AP2',
-    'AP2.EQUITIES.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.PRIVATEEQUITY.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.REALASSETS.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.FIXEDINCSECURITIES.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.GOVBONDSDEVMARKETS.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.CREDITBONDSDEVMARKETS.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.BONDSEMMARKETS.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.NONLISTEDCREDITS.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.OTHER.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.TOTAL.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.CURRENCYEXPOSURE.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.SUSTAINABLEINFRASTRUCTURE.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.TRADITIONALREALESTATE.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.NATURALCLIMATE.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.NORTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.SOUTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.OCEANIA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.EUROPEEXCLSWEDEN.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.SWEDEN.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.ASIA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.AFRICA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'AP2.TOTAL.ACTUALALLOCATION.NONE.A.1@AP2'
+    'AP2.OTHERS.ACTUALALLOCATION.NONE.A.1@AP2',
+    'AP2.SWEDISHGOV.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
 ]
 
 # Human-readable sub-headers (Row 2 in Excel) - EXACT match to sample
 OUTPUT_SUBHEADERS = [
-    None,  # First column has no sub-header
+    None,
     'AP2 annual: Fund capital carried forward',
     'AP2 annual: Net outflows to the national pension system',
     'AP2 annual: Net result for the year',
@@ -125,44 +102,21 @@ OUTPUT_SUBHEADERS = [
     'AP2 annual: Real Assets, Geographical distribution - North America',
     'AP2 annual: Real Assets, Geographical distribution - South America',
     'AP2 annual: Real Assets, Geographical distribution - Oceania',
-    'AP2 annual: Real Assets, Geographical distribution - Europe (excl. Sweden)',
+    'AP2 annual: Real Assets, Geographical distribution - Europe',  # Changed from Europe (excl. Sweden)
     'AP2 annual: Real Assets, Geographical distribution - Sweden',
     'AP2 annual: Real Assets, Geographical distribution - Asia',
-    'AP2 annual: Real Assets, Geographical distribution - Africa',
-    'AP2 annual: Real Assets, Geographical distribution - Total',
-    'AP2 annual: Strategic portfolio - Equities',
-    'AP2 annual: Strategic portfolio - Private Equity',
-    'AP2 annual: Strategic portfolio - Real assets',
-    'AP2 annual: Strategic portfolio - Fixed-income securities',
-    'AP2 annual: Strategic portfolio - Government bonds in developed markets',
-    'AP2 annual: Strategic portfolio - Credit bonds in developed markets',
-    'AP2 annual: Strategic portfolio - Bonds in emerging markets',
-    'AP2 annual: Strategic portfolio - Non-listed credits',
-    'AP2 annual: Strategic portfolio - Other',
-    'AP2 annual: Strategic portfolio - Total',
-    'AP2 annual: Strategic portfolio - Currency exposure',
-    'AP2 annual: Exposure - Equities',
-    'AP2 annual: Alternative investments - Private equity',
-    'AP2 annual: Exposure - Real assets',
-    'AP2 annual: Exposure - Fixed-income securities',
-    'AP2 annual: Exposure - Government bonds in developed markets',
-    'AP2 annual: Exposure - Credit bonds in developed markets',
-    'AP2 annual: Exposure - Bonds in emerging markets',
-    'AP2 annual: Exposure - Non-listed credits',
-    'AP2 annual: Exposure - Other',
-    'AP2 annual: Exposure - Total',
-    'AP2 annual: Exposure - Currency exposure',
-    'AP2 annual: Alternative investments - Sustainable infrastructure',
-    'AP2 annual: Real Assets, Portfolio distribution - Traditional real estate',
-    'AP2 annual: Real Assets, Portfolio distribution - Natural Climate Solutions',
-    'AP2 annual: Real Assets, Geographical distribution - North America',
-    'AP2 annual: Real Assets, Geographical distribution - South America',
-    'AP2 annual: Real Assets, Geographical distribution - Oceania',
-    'AP2 annual: Real Assets, Geographical distribution - Europe (excl. Sweden)',
-    'AP2 annual: Real Assets, Geographical distribution - Sweden',
-    'AP2 annual: Real Assets, Geographical distribution - Asia',
-    'AP2 annual: Real Assets, Geographical distribution - Africa',
-    'AP2 annual: Real Assets, Geographical distribution - Total'
+    'AP2 annual: Real Assets, Geographical distribution - Others',
+    'AP2 annual: Bonds and other fixed-income securities, Swedish Government',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Swedish municipalities',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Swedish mortgage institutions',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Financial companies',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Non-financial companies',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Foreign governments',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Other foreign issuers',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Total (Issuer Category)',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Other bonds',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Unlisted loans',  # Added
+    'AP2 annual: Bonds and other fixed-income securities, Participations in foreign fixed-income funds',  # Added
 ]
 
 # Readable header mapping for reference
@@ -204,11 +158,21 @@ HEADER_MAPPING = {
     'North America (Real Assets, Geographical Distribution)': 'AP2.NORTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2',
     'South America (Real Assets, Geographical Distribution)': 'AP2.SOUTHAMERICA.ACTUALALLOCATION.NONE.A.1@AP2',
     'Oceania (Real Assets, Geographical Distribution)': 'AP2.OCEANIA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'Europe (excl. Sweden) (Real Assets, Geographical Distribution)': 'AP2.EUROPEEXCLSWEDEN.ACTUALALLOCATION.NONE.A.1@AP2',
+    'Europe (Real Assets, Geographical Distribution)': 'AP2.EUROPE.ACTUALALLOCATION.NONE.A.1@AP2',  # Changed from Europe (excl. Sweden)
     'Sweden (Real Assets, Geographical Distribution)': 'AP2.SWEDEN.ACTUALALLOCATION.NONE.A.1@AP2',
     'Asia (Real Assets, Geographical Distribution)': 'AP2.ASIA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'Africa (Real Assets, Geographical Distribution)': 'AP2.AFRICA.ACTUALALLOCATION.NONE.A.1@AP2',
-    'Total (Real Assets, Geographical Distribution)': 'AP2.TOTAL.ACTUALALLOCATION.NONE.A.1@AP2'
+    'Others (Real Assets, Geographical Distribution)': 'AP2.OTHERS.ACTUALALLOCATION.NONE.A.1@AP2',
+    'Swedish Government (Bonds and other fixed-income securities)': 'AP2.SWEDISHGOV.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Swedish municipalities (Bonds and other fixed-income securities)': 'AP2.SWMUNICIPAL.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Swedish mortgage institutions (Bonds and other fixed-income securities)': 'AP2.SWMORTGAGE.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Financial companies (Bonds and other fixed-income securities)': 'AP2.FINCOMP.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Non-financial companies (Bonds and other fixed-income securities)': 'AP2.NONFINCOMP.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Foreign governments (Bonds and other fixed-income securities)': 'AP2.FOREIGNBONDS.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Other foreign issuers (Bonds and other fixed-income securities)': 'AP2.FOREIGNBONDSOTHERFORISS.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Total (Issuer Category) (Bonds and other fixed-income securities)': 'AP2.TOTALBONDSISSUERCAT.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Other bonds (Bonds and other fixed-income securities)': 'AP2.BONDSOTHER.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Unlisted loans (Bonds and other fixed-income securities)': 'AP2.LOANSUNLISTED.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
+    'Participations in foreign fixed-income funds (Bonds and other fixed-income securities)': 'AP2.FUNDSFIXEDINCOME.ACTUALALLOCATION.NONE.A.1@AP2',  # Added
 }
 
 # ============================================================================

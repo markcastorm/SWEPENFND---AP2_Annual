@@ -1,4 +1,4 @@
-AP2 annual: Fund capital carried forward	
+AP2 annual: Fund capital carried forward	= 
 AP2 annual: Net outflows to the national pension system	
 AP2 annual: Net result for the year	
 AP2 annual: Strategic portfolio - Swedish equities	
